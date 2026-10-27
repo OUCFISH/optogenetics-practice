@@ -1,0 +1,1458 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🧬 光遗传技术及其应用 · 互动练习</title>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+        font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', sans-serif;
+        background: #eef2f7;
+        background-image: radial-gradient(circle at 12% 8%, rgba(120, 150, 200, 0.14) 0%, transparent 46%),
+            radial-gradient(circle at 88% 92%, rgba(200, 120, 110, 0.10) 0%, transparent 46%);
+        min-height: 100vh;
+        color: #1b2b45;
+        padding: 70px 24px 40px;
+        line-height: 1.6;
+    }
+
+    /* ---------- 顶部进度条 ---------- */
+    .topbar {
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        z-index: 50;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 10px 28px;
+        background: rgba(255, 255, 255, 0.86);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(140, 170, 210, 0.3);
+        font-size: 14px;
+    }
+    .topbar .tb-title { font-weight: 600; color: #24405f; letter-spacing: .3px; }
+    .topbar .tb-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .topbar .pill {
+        background: #e6eef8;
+        color: #2f4f7f;
+        border-radius: 30px;
+        padding: 3px 14px;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+    .topbar .pill.score { background: #f6e8e5; color: #96403a; }
+
+    /* ---------- 主容器 ---------- */
+    .container {
+        max-width: 1040px;
+        margin: 0 auto;
+        background: rgba(255, 255, 255, 0.78);
+        backdrop-filter: blur(4px);
+        border-radius: 28px;
+        padding: 30px 40px 36px;
+        box-shadow: 0 20px 60px rgba(40, 60, 90, 0.12), 0 4px 20px rgba(40, 60, 90, 0.05);
+        border: 1px solid rgba(170, 195, 225, 0.4);
+    }
+
+    .header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 22px;
+        padding-bottom: 16px;
+        border-bottom: 2px solid rgba(150, 180, 215, 0.35);
+    }
+    .header-left { display: flex; align-items: center; gap: 14px; }
+    .header-icon { font-size: 34px; line-height: 1; }
+    .header-title h1 { font-size: 25px; font-weight: 700; color: #16263f; letter-spacing: .5px; }
+    .header-title .sub { font-size: 13.5px; color: #5c7392; margin-top: 3px; }
+    .header-badge {
+        background: #dfe9f6;
+        padding: 7px 18px;
+        border-radius: 40px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #2c4a70;
+        border: 1px solid #c3d5ea;
+    }
+
+    /* ---------- 材料 ---------- */
+    .material {
+        background: #f7fafd;
+        border-radius: 18px;
+        padding: 20px 24px;
+        margin-bottom: 22px;
+        border-left: 6px solid #2f4f7f;
+    }
+    .material .m-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #2f4f7f;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .material .m-label .tag {
+        background: #2f4f7f;
+        color: #fff;
+        font-size: 11.5px;
+        padding: 1px 10px;
+        border-radius: 20px;
+        font-weight: 400;
+    }
+    .material p {
+        font-size: 15.5px;
+        line-height: 1.85;
+        color: #1d2c44;
+        text-align: justify;
+        margin-bottom: 8px;
+    }
+    .material p:last-child { margin-bottom: 0; }
+    .material sup { font-size: 10.5px; color: #4a6a95; }
+
+    /* ---------- 题号导航 ---------- */
+    .qnav {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+    }
+    .qnav .qn-label { font-size: 13px; color: #7a8ea8; margin-right: 2px; }
+    .navdot {
+        width: 30px; height: 30px;
+        border-radius: 50%;
+        border: 1.5px solid #c3d5ea;
+        background: #fff;
+        color: #2f4f7f;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all .18s;
+    }
+    .navdot:hover { background: #eef3f9; border-color: #9db6d3; }
+    .navdot.done { background: #5a9a6a; border-color: #5a9a6a; color: #fff; }
+    .navdot.half { background: #cfa855; border-color: #cfa855; color: #fff; }
+    .navdot.wrong { background: #c06a5a; border-color: #c06a5a; color: #fff; }
+
+    /* ---------- 图片放大 ---------- */
+    .lightbox {
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        background: rgba(12, 22, 36, 0.93);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 10px;
+        padding: 18px;
+    }
+    .lightbox.show { display: flex; }
+    .lightbox img {
+        max-width: 96vw;
+        max-height: 86vh;
+        background: #fff;
+        border-radius: 10px;
+        padding: 8px;
+    }
+    .lightbox .lb-hint { color: #c9d7e8; font-size: 13px; }
+
+    figure { margin: 16px 0 6px; text-align: center; }
+    figure img {
+        width: 100%;
+        max-width: 720px;
+        height: auto;
+        background: #fff;
+        border-radius: 10px;
+        padding: 6px;
+        border: 1px solid #e2eaf3;
+        cursor: zoom-in;
+    }
+    figure .figcap {
+        font-size: 13px;
+        color: #3c5271;
+        margin-top: 6px;
+        display: flex;
+        justify-content: space-around;
+        max-width: 720px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .figcap.single { justify-content: center; }
+    .fignote {
+        font-size: 12.5px;
+        color: #6a7f99;
+        margin: 2px 0 4px;
+        text-align: left;
+        max-width: 720px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* ---------- 题目卡 ---------- */
+    .q-card {
+        background: #fbfcfe;
+        border-radius: 16px;
+        padding: 18px 22px 16px;
+        margin-bottom: 16px;
+        border: 1px solid #e4ebf4;
+        border-left: 5px solid #9db6d3;
+        box-shadow: 0 2px 10px rgba(60, 90, 130, 0.05);
+        transition: border-color .25s, box-shadow .25s;
+    }
+    .q-card.active { border-left-color: #2f4f7f; box-shadow: 0 4px 18px rgba(60, 90, 130, 0.10); }
+    .q-card.done { border-left-color: #5a9a6a; }
+    .q-card.wrong { border-left-color: #c06a5a; }
+
+    .q-head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 8px;
+        flex-wrap: wrap;
+    }
+    .q-no {
+        width: 26px; height: 26px;
+        flex: 0 0 26px;
+        border-radius: 50%;
+        background: #2f4f7f;
+        color: #fff;
+        font-size: 14px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .q-type {
+        font-size: 12px;
+        color: #4a6a95;
+        background: #e8f0f9;
+        border-radius: 20px;
+        padding: 1px 12px;
+    }
+    .q-score-tag {
+        margin-left: auto;
+        font-size: 12.5px;
+        color: #7a8ea8;
+    }
+    .q-text {
+        font-size: 15.5px;
+        line-height: 1.8;
+        color: #16263f;
+        margin-bottom: 12px;
+        text-align: justify;
+    }
+    .q-text .blank { display: inline-block; min-width: 76px; border-bottom: 1px solid #16263f; }
+
+    /* ---------- 选项（单选） ---------- */
+    .opts { display: flex; flex-direction: column; gap: 8px; }
+    .opt {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 9px 14px;
+        border: 1.5px solid #dde6f1;
+        border-radius: 12px;
+        background: #fff;
+        cursor: pointer;
+        font-size: 15px;
+        line-height: 1.65;
+        transition: all .18s;
+    }
+    .opt:hover { border-color: #9db6d3; background: #f6faff; }
+    .opt input { display: none; }
+    .opt .opt-k {
+        flex: 0 0 22px;
+        width: 22px; height: 22px;
+        border-radius: 50%;
+        border: 1.5px solid #b9c9dd;
+        color: #4a6a95;
+        font-size: 13px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 1px;
+        transition: all .18s;
+    }
+    .opt.checked { border-color: #2f4f7f; background: #eef4fc; }
+    .opt.checked .opt-k { background: #2f4f7f; border-color: #2f4f7f; color: #fff; }
+    .opt.correct { border-color: #5a9a6a; background: #eef8f0; }
+    .opt.correct .opt-k { background: #5a9a6a; border-color: #5a9a6a; color: #fff; }
+    .opt.wrong-pick { border-color: #c06a5a; background: #fdf0ee; }
+    .opt.wrong-pick .opt-k { background: #c06a5a; border-color: #c06a5a; color: #fff; }
+    .opt.locked { cursor: default; }
+    .opt.locked:hover { border-color: #dde6f1; background: #fff; }
+    .opt.locked.correct, .opt.locked.correct:hover { border-color: #5a9a6a; background: #eef8f0; }
+    .opt.locked.wrong-pick, .opt.locked.wrong-pick:hover { border-color: #c06a5a; background: #fdf0ee; }
+    .opts.row { flex-direction: row; flex-wrap: wrap; gap: 10px; }
+    .opts.row .opt { flex: 0 0 auto; padding: 7px 18px; }
+
+    /* ---------- 编号选填 ---------- */
+    .picklist { display: flex; flex-direction: column; gap: 7px; }
+    .pick {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 8px 14px;
+        border: 1.5px solid #dde6f1;
+        border-radius: 12px;
+        background: #fff;
+        cursor: pointer;
+        font-size: 15px;
+        line-height: 1.65;
+        text-align: left;
+        font-family: inherit;
+        color: #16263f;
+        transition: all .18s;
+    }
+    .pick:hover { border-color: #9db6d3; background: #f6faff; }
+    .pick .pick-k {
+        flex: 0 0 auto;
+        color: #4a6a95;
+        font-weight: 600;
+    }
+    .pick.sel { border-color: #2f4f7f; background: #eef4fc; }
+    .pick.sel .pick-k { color: #2f4f7f; }
+    .pick.correct { border-color: #5a9a6a; background: #eef8f0; }
+    .pick.wrong-pick { border-color: #c06a5a; background: #fdf0ee; }
+    .pick.locked { cursor: default; }
+    .pick.locked:hover { border-color: #dde6f1; background: #fff; }
+    .pick.locked.sel:hover { border-color: #2f4f7f; background: #eef4fc; }
+    .pick.locked.correct:hover { border-color: #5a9a6a; background: #eef8f0; }
+    .pick.locked.wrong-pick:hover { border-color: #c06a5a; background: #fdf0ee; }
+    .pick.dim { opacity: .45; }
+
+    /* ---------- 排序题 ---------- */
+    .order-box {
+        min-height: 52px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px;
+        border: 1.5px dashed #b9c9dd;
+        border-radius: 12px;
+        background: #f7fafd;
+        margin-bottom: 12px;
+    }
+    .order-box .order-empty { font-size: 13.5px; color: #8aa0b8; }
+    .ochip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 30px;
+        background: #2f4f7f;
+        color: #fff;
+        font-size: 14px;
+        border: none;
+        cursor: pointer;
+        font-family: inherit;
+    }
+    .ochip .x { font-size: 12px; opacity: .75; }
+    .ochip:hover { background: #24405f; }
+    .ochip .arrow { opacity: .6; font-size: 12px; }
+    .ochip-last { background: #4a6a95; }
+
+    /* ---------- 第6题 ---------- */
+    .pick-pairs { display: flex; flex-direction: column; gap: 9px; margin-bottom: 14px; }
+    .pair-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding: 9px 14px;
+        border: 1.5px solid #dde6f1;
+        border-radius: 12px;
+        background: #fff;
+        font-size: 14.5px;
+    }
+    .pair-row .pair-name { font-weight: 600; color: #2f4f7f; flex: 0 0 auto; }
+    .pair-row .pair-desc { font-size: 13px; color: #6a7f99; flex: 1 1 260px; line-height: 1.5; }
+    .pair-row .pair-opts { display: flex; gap: 8px; flex: 0 0 auto; }
+    .pbtn {
+        padding: 4px 16px;
+        border-radius: 30px;
+        border: 1.5px solid #c9d7e8;
+        background: #fff;
+        color: #3c5271;
+        font-size: 13.5px;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all .18s;
+    }
+    .pbtn:hover { border-color: #9db6d3; background: #f2f7fd; }
+    .pbtn.on { background: #2f4f7f; border-color: #2f4f7f; color: #fff; font-weight: 600; }
+    .pbtn.ok { background: #5a9a6a; border-color: #5a9a6a; color: #fff; font-weight: 600; }
+    .pbtn.no { background: #c06a5a; border-color: #c06a5a; color: #fff; font-weight: 600; }
+    .pbtn:disabled { cursor: default; }
+
+    textarea {
+        width: 100%;
+        min-height: 118px;
+        padding: 14px 16px;
+        font-size: 15px;
+        line-height: 1.7;
+        border: 2px solid #dde6f1;
+        border-radius: 14px;
+        background: #fff;
+        color: #16263f;
+        resize: vertical;
+        font-family: inherit;
+        transition: border-color .25s, box-shadow .25s;
+    }
+    textarea:focus {
+        outline: none;
+        border-color: #2f4f7f;
+        box-shadow: 0 0 0 6px rgba(47, 79, 127, 0.10);
+    }
+    .ta-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 10px 0 6px; flex-wrap: wrap; }
+    .ta-row .ta-label { font-size: 14.5px; font-weight: 600; color: #2f4f7f; }
+    .word-count { font-size: 13px; color: #6a7f99; background: #eef3f9; padding: 2px 14px; border-radius: 30px; }
+
+    /* ---------- 按钮 ---------- */
+    .btn {
+        padding: 9px 26px;
+        font-size: 15px;
+        font-weight: 600;
+        border: none;
+        border-radius: 40px;
+        cursor: pointer;
+        transition: all .2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #e8eef7;
+        color: #2f4f7f;
+        font-family: inherit;
+    }
+    .btn-primary { background: #2f4f7f; color: #fff; box-shadow: 0 4px 14px rgba(47, 79, 127, 0.24); }
+    .btn-primary:hover { background: #24405f; transform: translateY(-1px); }
+    .btn-red { background: #b03a2e; color: #fff; box-shadow: 0 4px 14px rgba(176, 58, 46, 0.22); }
+    .btn-red:hover { background: #97302a; transform: translateY(-1px); }
+    .btn-outline { background: transparent; border: 2px solid #c3d5ea; color: #2f4f7f; }
+    .btn-outline:hover { background: #f0f5fb; border-color: #2f4f7f; }
+    .btn-small {
+        padding: 4px 14px;
+        font-size: 12.5px;
+        font-weight: 600;
+        border-radius: 30px;
+        border: 1px solid #c3d5ea;
+        background: #eef3f9;
+        color: #2f4f7f;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all .2s;
+    }
+    .btn-small:hover { background: #dfe9f6; }
+    .btn:disabled { opacity: .5; cursor: default; transform: none; box-shadow: none; }
+
+    .q-foot { display: flex; align-items: center; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
+    .q-state { font-size: 13px; color: #8aa0b8; }
+    .q-state.ok { color: #4a8a5a; font-weight: 600; }
+    .q-state.no { color: #b0563f; font-weight: 600; }
+
+    /* ---------- 题目反馈 ---------- */
+    .q-fb {
+        margin-top: 12px;
+        border-radius: 12px;
+        padding: 11px 16px;
+        font-size: 13.5px;
+        line-height: 1.65;
+        background: #f4f8fd;
+        border-left: 4px solid #2f4f7f;
+        color: #1d2c44;
+    }
+    .q-fb.ok { background: #f0f8f2; border-left-color: #5a9a6a; }
+    .q-fb.no { background: #fdf3f1; border-left-color: #c06a5a; }
+    .q-fb .fb-head { font-weight: 700; margin-bottom: 4px; }
+    .q-fb .fb-exp { color: #3c5271; }
+    .q-fb .fb-dims { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: #3c5271; }
+
+    /* ---------- 交卷 / 成绩单 ---------- */
+    .submitbar {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin: 24px 0 6px;
+        padding: 16px 20px;
+        background: #f2f6fb;
+        border-radius: 16px;
+        border: 1px dashed #c3d5ea;
+    }
+    .submitbar .sb-hint { font-size: 13.5px; color: #5c7392; flex: 1 1 240px; }
+
+    .result-area {
+        background: #f7fafd;
+        border-radius: 20px;
+        padding: 18px 22px;
+        margin-top: 18px;
+        border: 2px solid #dbe6f2;
+        display: none;
+    }
+    .result-area.show { display: block; animation: fadeSlide .35s ease; }
+    @keyframes fadeSlide { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .result-header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+    .total-badge {
+        font-size: 26px;
+        font-weight: 700;
+        padding: 2px 20px;
+        border-radius: 40px;
+        background: #dfe9f6;
+        color: #24405f;
+    }
+    .total-badge.high { background: #2f4f7f; color: #fff; box-shadow: 0 4px 16px rgba(47, 79, 127, 0.25); }
+    .total-badge.mid { background: #b9cfe6; color: #1e3a5c; }
+    .total-badge.low { background: #f0e0dc; color: #8a4a3a; }
+    .total-label { font-size: 15px; color: #3c5271; }
+    .result-time { margin-left: auto; font-size: 13px; color: #7a8ea8; }
+
+    .score-table { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+    .score-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 7px 14px;
+        background: #fff;
+        border-radius: 10px;
+        border: 1px solid #e4ebf4;
+        font-size: 14px;
+        flex-wrap: wrap;
+    }
+    .score-row .sr-no { font-weight: 600; color: #2f4f7f; flex: 0 0 62px; }
+    .score-row .sr-ans { flex: 1 1 200px; color: #3c5271; font-size: 13.5px; word-break: break-all; }
+    .score-row .sr-val { font-weight: 700; flex: 0 0 auto; }
+    .score-row .sr-val.ok { color: #3f8a52; }
+    .score-row .sr-val.part { color: #b08a2e; }
+    .score-row .sr-val.no { color: #b0563f; }
+
+    .feedback-box, .advice-box {
+        border-radius: 12px;
+        padding: 10px 16px;
+        margin: 8px 0;
+        font-size: 13.5px;
+        line-height: 1.6;
+    }
+    .feedback-box { background: #f2f8f4; border-left: 4px solid #5a9a6a; color: #1d3a26; }
+    .advice-box { background: #fdf8ee; border-left: 4px solid #d4b87a; color: #4a3a2a; }
+    .feedback-box .fb-title, .advice-box .adv-title { font-weight: 700; margin-bottom: 3px; }
+
+    details.ref {
+        margin-top: 10px;
+        background: #fff;
+        border: 1px solid #e4ebf4;
+        border-radius: 12px;
+        padding: 10px 16px;
+        font-size: 13.5px;
+        line-height: 1.7;
+        color: #2a3c55;
+    }
+    details.ref summary { cursor: pointer; font-weight: 600; color: #2f4f7f; }
+    details.ref p { margin-top: 6px; }
+    details.ref b { color: #b03a2e; }
+
+    /* ---------- 历史 ---------- */
+    .history-area { margin-top: 22px; }
+    .h-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #24405f;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #dbe6f2;
+        flex-wrap: wrap;
+    }
+    .h-title .count { font-weight: 400; font-size: 13px; color: #6a7f99; background: #eef3f9; padding: 0 12px; border-radius: 30px; }
+    .h-title .control-btns { margin-left: auto; display: flex; gap: 8px; }
+    .history-list-wrap.hidden { display: none; }
+    .history-list { display: flex; flex-direction: column; gap: 10px; max-height: 380px; overflow-y: auto; padding-right: 6px; }
+    .history-list::-webkit-scrollbar { width: 5px; }
+    .history-list::-webkit-scrollbar-track { background: #eef3f9; border-radius: 10px; }
+    .history-list::-webkit-scrollbar-thumb { background: #b9cfe6; border-radius: 10px; }
+    .history-item {
+        background: #fbfcfe;
+        border-radius: 14px;
+        padding: 12px 18px;
+        border: 1px solid #e4ebf4;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    .history-item .h-score { flex: 0 0 84px; font-weight: 700; font-size: 17px; color: #2f4f7f; }
+    .history-item .h-body { flex: 1; min-width: 180px; }
+    .history-item .h-body .h-text { font-size: 13.5px; line-height: 1.6; color: #2a3c55; word-break: break-word; }
+    .history-item .h-meta .toggle-text {
+        color: #2f4f7f;
+        cursor: pointer;
+        font-weight: 600;
+        background: #e6eef8;
+        border: 1px solid #c3d5ea;
+        padding: 2px 14px;
+        border-radius: 30px;
+        font-size: 12px;
+        line-height: 1.8;
+        margin-top: 4px;
+    }
+    .history-empty { color: #7a92ac; font-size: 14px; padding: 18px 0; text-align: center; background: #f7fafd; border-radius: 14px; border: 2px dashed #dbe6f2; }
+
+    .foot-note { margin-top: 26px; font-size: 12.5px; color: #7a8ea8; text-align: center; line-height: 1.7; }
+
+    @media (max-width: 760px) {
+        body { padding: 66px 12px 28px; }
+        .container { padding: 20px 16px 26px; border-radius: 20px; }
+        .header-title h1 { font-size: 20px; }
+        .material { padding: 16px 16px; }
+        .material p { font-size: 15px; }
+        .q-card { padding: 14px 15px; }
+        .q-text { font-size: 15px; }
+        .opt, .pick { font-size: 14.5px; }
+        .topbar { padding: 8px 14px; font-size: 12.5px; }
+        .topbar .tb-title { display: none; }
+        .submitbar { padding: 12px 14px; }
+        .total-badge { font-size: 22px; }
+        .pair-row .pair-desc { display: none; }
+    }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+    <div class="tb-title">🧬 光遗传技术及其应用</div>
+    <div class="tb-right">
+        <span class="pill" id="progressText">已答 0 / 6 题</span>
+        <span class="pill score" id="scoreText">目前 0 分</span>
+    </div>
+</div>
+
+<div class="container">
+
+    <div class="header">
+        <div class="header-left">
+            <div class="header-icon">🧬</div>
+            <div class="header-title">
+                <h1>光遗传技术及其应用</h1>
+                <div class="sub">选择性必修1、3 · 总分 15 分 · 建议用时 20 分钟</div>
+            </div>
+        </div>
+        <div class="header-badge">📖 6 题 · 边做边评</div>
+    </div>
+
+    <div class="qnav" id="qnav">
+        <span class="qn-label">跳转</span>
+        <button class="navdot" data-go="1">1</button>
+        <button class="navdot" data-go="2">2</button>
+        <button class="navdot" data-go="3">3</button>
+        <button class="navdot" data-go="4">4</button>
+        <button class="navdot" data-go="5">5</button>
+        <button class="navdot" data-go="6">6</button>
+    </div>
+
+    <!-- ==================== 材料一 ==================== -->
+    <div class="material">
+        <div class="m-label"><span class="tag">材料一</span>藻类细胞上的“光开关”</div>
+        <p>2002年，科学家从衣藻中分离出感光蛋白ChR1。将其基因导入爪蟾卵母细胞，500 nm光照射即可引起通道电流<sup>[1]</sup>。2003年发现的ChR2被460 nm蓝光激活后可让Na⁺等阳离子通过（图1A）；持续光照会使通道失活、电流减小，需在黑暗中恢复<sup>[2]</sup>。2005年，把ChR2基因导入哺乳动物神经元并给予蓝光脉冲，神经元便按光的节律放电（图1B）<sup>[3]</sup>。这种用光控制特定神经元活动的技术称为光遗传学<sup>[3-4]</sup>，2026年获诺贝尔生理学或医学奖<sup>[7]</sup>；此后又找到对红光敏感的ChrimsonR等通道蛋白<sup>[5-6]</sup>。</p>
+        <figure>
+            <img src="images/fig1.png" alt="图1 光控通道的离子选择性与光脉冲频率">
+            <div class="figcap"><span>图1A</span><span>图1B</span></div>
+            <div class="fignote">注：图1B中红色短竖线表示一次蓝光脉冲</div>
+        </figure>
+    </div>
+
+    <!-- 第1题 -->
+    <div class="q-card" id="card1">
+        <div class="q-head">
+            <span class="q-no">1</span>
+            <span class="q-type">单选</span>
+            <span class="q-score-tag">2 分</span>
+        </div>
+        <div class="q-text">把ChR1基因导入神经元，光照几乎不引起动作电位；导入ChR2则可以。结合图1A，能解释该现象的是<span class="blank"></span>。</div>
+        <div class="opts" id="q1opts">
+            <label class="opt" data-v="A"><input type="radio" name="q1" value="A"><span class="opt-k">A</span><span class="opt-t">ChR1只通H⁺，而细胞外液H⁺浓度很低，内流的H⁺少，膜内电位达不到阈电位</span></label>
+            <label class="opt" data-v="B"><input type="radio" name="q1" value="B"><span class="opt-k">B</span><span class="opt-t">ChR1只通H⁺，H⁺内流中和了膜内的负电荷，膜内电位反而降低</span></label>
+            <label class="opt" data-v="C"><input type="radio" name="q1" value="C"><span class="opt-k">C</span><span class="opt-t">ChR1可同时让Na⁺、K⁺、Ca²⁺通过，膜内外离子交换使膜电位基本不变</span></label>
+            <label class="opt" data-v="D"><input type="radio" name="q1" value="D"><span class="opt-k">D</span><span class="opt-t">500 nm的光不能使ChR1通道开放，光照时没有离子进出细胞</span></label>
+        </div>
+        <div class="q-foot">
+            <button class="btn btn-primary" data-submit="1">提交本题</button>
+            <button class="btn btn-outline" data-reset="1" style="display:none">重做</button>
+            <span class="q-state" id="state1">未作答</span>
+        </div>
+        <div class="q-fb" id="fb1" style="display:none"></div>
+    </div>
+
+    <!-- 第2题 -->
+    <div class="q-card" id="card2">
+        <div class="q-head">
+            <span class="q-no">2</span>
+            <span class="q-type">编号选填</span>
+            <span class="q-score-tag">2 分</span>
+        </div>
+        <div class="q-text">据图1B，30 Hz时有的光脉冲没有引发动作电位，结合题干信息和已学知识，推测这一现象产生的原因是<span class="blank"></span>。（可多选）</div>
+        <div class="picklist" id="q2list">
+            <button class="pick" data-k="①"><span class="pick-k">①</span><span>脉冲间隔缩短，ChR2来不及从失活状态中恢复</span></button>
+            <button class="pick" data-k="②"><span class="pick-k">②</span><span>每次脉冲产生的通道电流减小</span></button>
+            <button class="pick" data-k="③"><span class="pick-k">③</span><span>膜内电位升高的幅度达不到阈电位</span></button>
+            <button class="pick" data-k="④"><span class="pick-k">④</span><span>30 Hz时每次脉冲的光强低于5 Hz时</span></button>
+            <button class="pick" data-k="⑤"><span class="pick-k">⑤</span><span>相邻动作电位相互靠拢、彼此抵消</span></button>
+            <button class="pick" data-k="⑥"><span class="pick-k">⑥</span><span>细胞外液中的Na⁺被大量消耗</span></button>
+        </div>
+        <div class="q-foot">
+            <button class="btn btn-primary" data-submit="2">提交本题</button>
+            <button class="btn btn-outline" data-reset="2" style="display:none">重做</button>
+            <span class="q-state" id="state2">未作答</span>
+        </div>
+        <div class="q-fb" id="fb2" style="display:none"></div>
+    </div>
+
+    <!-- ==================== 材料二 ==================== -->
+    <div class="material">
+        <div class="m-label"><span class="tag">材料二</span>给失明的视网膜装一个“光开关”</div>
+        <p>视网膜色素变性（RP）患者视网膜中的感光细胞逐渐死亡，最终失明；晚期患者感光细胞已大量死亡，但部分神经节细胞仍存活。科研人员把ChrimsonR基因装入腺相关病毒（AAV）载体后注入眼内，载体上的启动子决定这段基因在哪些细胞中转录（图3）。患者佩戴光刺激眼镜，红光照射时ChrimsonR通道开放，神经节细胞产生兴奋（图2B）。</p>
+        <p>载体甲表达量高，所需光强低，但部分患者出现眼内炎症；载体乙表达量低，需更强的光照，长时间强光可能损伤残存的感光细胞。一项纳入10名晚期RP患者的临床试验显示，多数患者恢复了对光的感知<sup>[8]</sup>。</p>
+        <figure>
+            <img src="images/fig2.png" alt="图2 视网膜的信号传递通路与光遗传治疗">
+            <div class="figcap"><span>图2A</span><span>图2B</span></div>
+            <div class="fignote">注：ChrimsonR是一种被红光激活后开放、主要对Na⁺通透的阳离子通道蛋白。</div>
+        </figure>
+        <figure>
+            <img src="images/fig3.png" alt="图3 载体甲、载体乙的结构与检出情况">
+            <div class="figcap single"><span>图3　载体甲、载体乙的结构与注射后各细胞中ChrimsonR的检出情况</span></div>
+        </figure>
+    </div>
+
+    <!-- 第3题 -->
+    <div class="q-card" id="card3">
+        <div class="q-head">
+            <span class="q-no">3</span>
+            <span class="q-type">单选</span>
+            <span class="q-score-tag">2 分</span>
+        </div>
+        <div class="q-text">据图2A和已学知识推断，感光细胞接受光信号后，信号传至视觉中枢，其间共发生<span class="blank"></span>次“化学信号→电信号”的转换？</div>
+        <div class="opts row" id="q3opts">
+            <label class="opt" data-v="A"><input type="radio" name="q3" value="A"><span class="opt-k">A</span><span class="opt-t">2次</span></label>
+            <label class="opt" data-v="B"><input type="radio" name="q3" value="B"><span class="opt-k">B</span><span class="opt-t">3次</span></label>
+            <label class="opt" data-v="C"><input type="radio" name="q3" value="C"><span class="opt-k">C</span><span class="opt-t">4次</span></label>
+            <label class="opt" data-v="D"><input type="radio" name="q3" value="D"><span class="opt-k">D</span><span class="opt-t">5次</span></label>
+        </div>
+        <div class="q-foot">
+            <button class="btn btn-primary" data-submit="3">提交本题</button>
+            <button class="btn btn-outline" data-reset="3" style="display:none">重做</button>
+            <span class="q-state" id="state3">未作答</span>
+        </div>
+        <div class="q-fb" id="fb3" style="display:none"></div>
+    </div>
+
+    <!-- 第4题 -->
+    <div class="q-card" id="card4">
+        <div class="q-head">
+            <span class="q-no">4</span>
+            <span class="q-type">排序</span>
+            <span class="q-score-tag">2 分</span>
+        </div>
+        <div class="q-text">晚期RP患者从红光照射到产生视觉，依次经过的环节是<span class="blank"></span>（按顺序排列编号，有编号可能用不上）。</div>
+        <div class="order-box" id="q4order"><span class="order-empty">按先后顺序点击下面的环节；点已排的编号可撤回</span></div>
+        <div class="picklist" id="q4list">
+            <button class="pick" data-k="①"><span class="pick-k">①</span><span>红光照射到视网膜</span></button>
+            <button class="pick" data-k="②"><span class="pick-k">②</span><span>ChrimsonR通道开放</span></button>
+            <button class="pick" data-k="③"><span class="pick-k">③</span><span>Na⁺内流</span></button>
+            <button class="pick" data-k="④"><span class="pick-k">④</span><span>神经节细胞膜内电位升高</span></button>
+            <button class="pick" data-k="⑤"><span class="pick-k">⑤</span><span>神经节细胞产生动作电位</span></button>
+            <button class="pick" data-k="⑥"><span class="pick-k">⑥</span><span>兴奋沿视神经传向视觉中枢</span></button>
+            <button class="pick" data-k="⑦"><span class="pick-k">⑦</span><span>感光细胞将光信号转换为电信号</span></button>
+            <button class="pick" data-k="⑧"><span class="pick-k">⑧</span><span>双极细胞将信号传给神经节细胞</span></button>
+            <button class="pick" data-k="⑨"><span class="pick-k">⑨</span><span>K⁺外流</span></button>
+            <button class="pick" data-k="⑩"><span class="pick-k">⑩</span><span>视觉中枢产生视觉</span></button>
+        </div>
+        <div class="q-foot">
+            <button class="btn btn-primary" data-submit="4">提交本题</button>
+            <button class="btn btn-outline" data-reset="4" style="display:none">重做</button>
+            <span class="q-state" id="state4">未作答</span>
+        </div>
+        <div class="q-fb" id="fb4" style="display:none"></div>
+    </div>
+
+    <!-- 第5题 -->
+    <div class="q-card" id="card5">
+        <div class="q-head">
+            <span class="q-no">5</span>
+            <span class="q-type">单选</span>
+            <span class="q-score-tag">2 分</span>
+        </div>
+        <div class="q-text">用载体甲治疗后，神经节细胞、双极细胞和Müller细胞中都能检出ChrimsonR；用载体乙治疗则只有神经节细胞能检出。能解释这一差异的是<span class="blank"></span>。</div>
+        <div class="opts" id="q5opts">
+            <label class="opt" data-v="A"><input type="radio" name="q5" value="A"><span class="opt-k">A</span><span class="opt-t">两种载体的启动子不同，被启动转录的细胞种类不同</span></label>
+            <label class="opt" data-v="B"><input type="radio" name="q5" value="B"><span class="opt-k">B</span><span class="opt-t">载体乙中的ChrimsonR基因在神经节细胞中复制出更多拷贝</span></label>
+            <label class="opt" data-v="C"><input type="radio" name="q5" value="C"><span class="opt-k">C</span><span class="opt-t">载体甲合成的ChrimsonR蛋白由神经节细胞转移到了相邻细胞</span></label>
+            <label class="opt" data-v="D"><input type="radio" name="q5" value="D"><span class="opt-k">D</span><span class="opt-t">广谱启动子使ChrimsonR基因在多种细胞中发生了突变</span></label>
+        </div>
+        <div class="q-foot">
+            <button class="btn btn-primary" data-submit="5">提交本题</button>
+            <button class="btn btn-outline" data-reset="5" style="display:none">重做</button>
+            <span class="q-state" id="state5">未作答</span>
+        </div>
+        <div class="q-fb" id="fb5" style="display:none"></div>
+    </div>
+
+    <!-- 第6题 -->
+    <div class="q-card" id="card6">
+        <div class="q-head">
+            <span class="q-no">6</span>
+            <span class="q-type">分析与决策</span>
+            <span class="q-score-tag">5 分</span>
+        </div>
+        <div class="q-text">某医院眼科中心准备为三位晚期RP患者实施光遗传学治疗，三人均符合“神经节细胞仍存活”的条件：甲神经节细胞较多，但畏光，不能耐受较强或较长时间的光照；乙神经节细胞很少，需要尽可能多的神经节细胞被激活；丙仅有一只眼残存视力，最担心炎症等副作用。请结合图2、图3，为三人选择载体并说明理由。</div>
+
+        <div class="pick-pairs" id="q6pairs">
+            <div class="pair-row" data-p="甲">
+                <span class="pair-name">甲</span>
+                <span class="pair-desc">神经节细胞较多，畏光，不能耐受较强或较长时间的光照</span>
+                <span class="pair-opts"><button class="pbtn" data-p="甲" data-v="甲">载体甲</button><button class="pbtn" data-p="甲" data-v="乙">载体乙</button></span>
+            </div>
+            <div class="pair-row" data-p="乙">
+                <span class="pair-name">乙</span>
+                <span class="pair-desc">神经节细胞很少，需要尽可能多的神经节细胞被激活</span>
+                <span class="pair-opts"><button class="pbtn" data-p="乙" data-v="甲">载体甲</button><button class="pbtn" data-p="乙" data-v="乙">载体乙</button></span>
+            </div>
+            <div class="pair-row" data-p="丙">
+                <span class="pair-name">丙</span>
+                <span class="pair-desc">仅一只眼残存视力，最担心炎症等副作用</span>
+                <span class="pair-opts"><button class="pbtn" data-p="丙" data-v="甲">载体甲</button><button class="pbtn" data-p="丙" data-v="乙">载体乙</button></span>
+            </div>
+        </div>
+
+        <div class="ta-row">
+            <span class="ta-label">✍️ 说明理由</span>
+            <span class="word-count" id="q6count">0 字</span>
+        </div>
+        <textarea id="q6text" placeholder="为三人各写一条理由：所选载体的表达量与所需光强、激活的神经节细胞数量、对非靶细胞的影响……"></textarea>
+
+        <div class="q-foot">
+            <button class="btn btn-primary" data-submit="6">提交本题</button>
+            <button class="btn btn-outline" data-reset="6" style="display:none">重做</button>
+            <span class="q-state" id="state6">未作答</span>
+        </div>
+        <div class="q-fb" id="fb6" style="display:none"></div>
+    </div>
+
+    <!-- ==================== 交卷 ==================== -->
+    <div class="submitbar">
+        <span class="sb-hint" id="sbHint">六题全部提交后即可交卷，查看总分与参考答案。</span>
+        <button class="btn btn-red" id="finishBtn">📊 交卷看成绩</button>
+        <button class="btn btn-outline" id="restartBtn">🔄 重新开始</button>
+    </div>
+
+    <div class="result-area" id="resultArea">
+        <div class="result-header">
+            <span class="total-badge" id="totalBadge">0 / 15</span>
+            <span class="total-label" id="totalLabel"></span>
+            <span class="result-time" id="resultTime"></span>
+        </div>
+        <div class="score-table" id="scoreTable"></div>
+        <div class="feedback-box" id="fbBox" style="display:none">
+            <div class="fb-title">📋 评价</div>
+            <div id="fbText"></div>
+        </div>
+        <div class="advice-box" id="advBox" style="display:none">
+            <div class="adv-title">🔧 下一步建议</div>
+            <div id="advText"></div>
+        </div>
+
+        <details class="ref">
+            <summary>📖 参考答案（点击展开）</summary>
+            <p><b>1．A</b>　ChR1只允许H⁺通过，而细胞外液H⁺浓度很低，内流的H⁺少，膜内电位达不到阈电位；ChR2允许Na⁺等阳离子通过，细胞外液Na⁺浓度远高于膜内，Na⁺大量内流使膜内电位达到阈电位并产生动作电位。</p>
+            <p><b>2．①②③</b>　30 Hz时相邻脉冲间隔很短，ChR2在每次光照后进入失活状态，来不及在黑暗中恢复，每个脉冲引起的通道电流减小，膜内电位升高幅度达不到阈电位，故部分脉冲落空。④错在频率不影响光强，⑤错在动作电位不会相互抵消，⑥错在细胞外液Na⁺浓度不会因几次放电明显下降。选对两项得1分。</p>
+            <p><b>3．B</b>　三处突触依次为感光细胞—双极细胞、双极细胞—神经节细胞、神经节细胞—视觉中枢；每处突触后膜各完成一次“化学信号→电信号”的转换。</p>
+            <p><b>4．①→②→③→④→⑤→⑥→⑩</b>　治疗绕过了感光细胞与双极细胞（⑦⑧用不上）；⑨K⁺外流是维持静息电位的过程，不是这条通路上的环节。多用⑦⑧但顺序正确，得1分。</p>
+            <p><b>5．A</b>　启动子决定目的基因在哪些细胞中被转录：广谱启动子在三种细胞中都能启动转录，故都能检出；基因不会在神经节细胞中多复制出拷贝，蛋白不会转移到相邻细胞，启动子也不会使基因突变。</p>
+            <p><b>6．</b>甲选载体甲：表达量高、所需光强低，适合畏光、不能耐受较强或较长时间光照的患者；但非靶细胞也会表达ChrimsonR，须告知眼内炎症风险并加强监测。乙选载体甲：表达量高，同样光强下更容易使存活的神经节细胞达到阈电位，适合神经节细胞少的患者。丙选载体乙：只在神经节细胞中表达，其他细胞不产生ChrimsonR，安全性更好；代价是所需光强更高、起效更慢。</p>
+            <p style="color:#6a7f99">评分标准：甲、乙、丙的选择各1分（须结合该患者条件给出理由，只写载体名不给分）；三人理由分别落在“光强耐受”“表达量与激活的细胞数”“非靶表达与安全”三处、表述完整的得2分（缺一处扣0.5分，扣完为止）。</p>
+        </details>
+
+        <details class="ref">
+            <summary>📚 参考文献</summary>
+            <p>[1] NAGEL G, OLLIG D, FUHRMANN M, et al. Channelrhodopsin-1: a light-gated proton channel in green algae[J]. Science, 2002, 296(5577): 2395-2398.</p>
+            <p>[2] NAGEL G, SZELLAS T, HUHN W, et al. Channelrhodopsin-2, a directly light-gated cation-selective membrane channel[J]. PNAS, 2003, 100(24): 13940-13945.</p>
+            <p>[3] BOYDEN E S, ZHANG F, BAMBERG E, et al. Millisecond-timescale, genetically targeted optical control of neural activity[J]. Nature Neuroscience, 2005, 8(9): 1263-1268. https://doi.org/10.1038/nn1525</p>
+            <p>[4] DEISSEROTH K, FENG G, MAJEWSKA A K, et al. Next-generation optical technologies for illuminating genetically targeted brain circuits[J]. The Journal of Neuroscience, 2006, 26(41): 10380-10386.</p>
+            <p>[5] KLAPOETKE N C, MURATA Y, KIM S S, et al. Independent optical excitation of distinct neural populations[J]. Nature Methods, 2014, 11(3): 338-346.</p>
+            <p>[6] DEISSEROTH K. Optogenetics: 10 years of microbial opsins in neuroscience[J]. Nature Neuroscience, 2015, 18(9): 1213-1225.</p>
+            <p>[7] Nobel Prize Outreach. The Nobel Prize in Physiology or Medicine 2026. https://www.nobelprize.org/prizes/medicine/2026/summary/</p>
+            <p>[8] SAHEL J A, FUTTERKNECHT S, AUDO I, et al. Optogenetic therapy for restoring aspects of visual function[J]. N Engl J Med, 2026, 395(14): 1399-1408.</p>
+        </details>
+    </div>
+
+    <!-- ==================== 历史 ==================== -->
+    <div class="history-area">
+        <div class="h-title">
+            <span>📜 提交记录</span>
+            <span class="count" id="historyCount">0 条</span>
+            <span class="control-btns">
+                <button class="btn-small" id="clearHistoryBtn">清空记录</button>
+            </span>
+        </div>
+        <div class="history-list-wrap" id="historyListWrap">
+            <div class="history-list" id="historyList">
+                <div class="history-empty">🌱 暂无提交记录，开始作答吧！</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="foot-note">
+        图1～图3 由命题教师依据文献自行绘制；六道设问与评分标准均为原创设计。
+    </div>
+
+</div>
+
+<div class="lightbox" id="lightbox">
+    <img id="lightboxImg" alt="放大的图片">
+    <div class="lb-hint">点击任意处关闭</div>
+</div>
+
+<script>
+(function () {
+    "use strict";
+
+    // ================================================================
+    //  1. 答案与分值
+    // ================================================================
+    const ANS = {
+        q1: 'A',
+        q2: ['①', '②', '③'],
+        q3: 'B',
+        q4: ['①', '②', '③', '④', '⑤', '⑥', '⑩'],
+        q5: 'A',
+        q6: { 甲: '甲', 乙: '甲', 丙: '乙' }
+    };
+    const FULL = { 1: 2, 2: 2, 3: 2, 4: 2, 5: 2, 6: 5 };
+    const TOTAL = 15;
+
+    // 解析（按题目）
+    const EXP = {
+        1: 'ChR1只允许H⁺通过，而细胞外液H⁺浓度很低，内流的H⁺少，达不到阈电位；ChR2允许Na⁺等阳离子通过，细胞外液Na⁺浓度远高于膜内，Na⁺大量内流使膜内电位达到阈电位并产生动作电位。B项把H⁺内流引起的电位变化方向说反，C项与图1A不符，D项与“500 nm照射后立即出现通道电流”矛盾。',
+        2: '30 Hz时相邻脉冲间隔很短，ChR2在每次光照后进入失活状态，来不及在黑暗中恢复，每次脉冲产生的通道电流减小，膜内电位升高幅度达不到阈电位，因此部分脉冲落空。④错在频率不影响光强；⑤错在动作电位不会相互抵消；⑥错在细胞外液Na⁺浓度不会因几次放电明显下降。',
+        3: '三处突触依次为感光细胞—双极细胞、双极细胞—神经节细胞、神经节细胞—视觉中枢，每处突触后膜各完成一次“化学信号→电信号”的转换。',
+        4: '治疗绕过了感光细胞和双极细胞，红光直接作用于神经节细胞膜上的ChrimsonR：①→②→③→④→⑤→⑥→⑩。⑦⑧属于正常视网膜通路中被绕过的环节，⑨K⁺外流是维持静息电位的过程，三者都用不上。',
+        5: '启动子决定目的基因在哪些细胞中被转录。广谱启动子在三种细胞中都能启动该基因的转录，故都能检出该蛋白；基因不会在神经节细胞中多复制出拷贝，蛋白不会转移到相邻细胞，启动子也不会使基因突变。'
+    };
+
+    const state = {
+        1: { score: null, ans: null },
+        2: { score: null, ans: null },
+        3: { score: null, ans: null },
+        4: { score: null, ans: null },
+        5: { score: null, ans: null },
+        6: { score: null, ans: null }
+    };
+
+    let q4seq = [];
+    let q6pick = { 甲: null, 乙: null, 丙: null };
+
+    // ================================================================
+    //  2. 工具
+    // ================================================================
+    const $ = id => document.getElementById(id);
+
+    function norm(t) {
+        return (t || '').toLowerCase()
+            .replace(/₂/g, '2').replace(/₃/g, '3')
+            .replace(/[，,、。.；;：:！!？?“”‘’（）()【】\s]+/g, '');
+    }
+
+    function num(x) {
+        return Number.isInteger(x) ? String(x) : String(x);
+    }
+
+    // ================================================================
+    //  3. 各题判分
+    // ================================================================
+    function scoreChoice(q, v) {
+        if (!v) return { ok: false, s: 0, msg: '未选择' };
+        return { ok: v === ANS[q], s: v === ANS[q] ? 2 : 0 };
+    }
+
+    // 第2题：三项全对2分；选对两项（无错项）1分；其余0分
+    function scoreQ2(sel) {
+        const right = sel.filter(k => ANS.q2.indexOf(k) >= 0);
+        const wrong = sel.filter(k => ANS.q2.indexOf(k) < 0);
+        if (right.length === 3 && wrong.length === 0) return 2;
+        if (right.length === 2 && wrong.length === 0) return 1;
+        return 0;
+    }
+
+    // 第4题：完全正确2分；多用⑦⑧但其余顺序正确1分
+    function scoreQ4(seq) {
+        if (seq.length === 0) return 0;
+        const core = seq.filter(k => k !== '⑦' && k !== '⑧');
+        if (core.length !== ANS.q4.length) return 0;
+        for (let i = 0; i < core.length; i++) {
+            if (core[i] !== ANS.q4[i]) return 0;
+        }
+        return seq.length === ANS.q4.length ? 2 : 1;
+    }
+
+    // 第6题：三人选择各1分（须写理由）；理由按三个要点给分（缺一处扣0.5，扣完为止）
+    function scoreQ6(pick, text) {
+        const t = norm(text);
+        const hasText = t.length >= 6;
+        let choice = 0;
+        const detail = {};
+        ['甲', '乙', '丙'].forEach(p => {
+            const ok = pick[p] === ANS.q6[p];
+            detail[p] = ok;
+            if (ok && hasText) choice += 1;
+        });
+        const dims = {
+            light: /甲/.test(t) && /(畏光|怕光|光强|强光|耐受|光照强度|较弱的?光)/.test(t),
+            expr: /乙/.test(t) && /(表达量|表达|细胞少|细胞很少|数量少|激活|阈电位|更多的?神经节细胞)/.test(t),
+            safe: /丙/.test(t) && /(非靶|其他细胞|别的细胞|双极|muller|müller|炎症|安全|特异|副作用)/.test(t)
+        };
+        const n = Object.values(dims).filter(Boolean).length;
+        let reason = hasText ? Math.max(0, 2 - 0.5 * (3 - n)) : 0;
+        return { choice: choice, reason: reason, dims: dims, total: choice + reason, hasText: hasText, detail: detail };
+    }
+
+    // ================================================================
+    //  4. 选项交互
+    // ================================================================
+    function bindChoice(q) {
+        const box = $('q' + q + 'opts');
+        if (!box) return;
+        box.querySelectorAll('.opt').forEach(el => {
+            el.addEventListener('click', function (e) {
+                if (cardOf(q).classList.contains('done')) { e.preventDefault(); return; }
+                box.querySelectorAll('.opt').forEach(o => o.classList.remove('checked'));
+                el.classList.add('checked');
+                el.querySelector('input').checked = true;
+                setState(q, '已作答，待提交', '');
+            });
+        });
+    }
+
+    function bindPicks(q, multi) {
+        const box = $('q' + q + 'list');
+        box.querySelectorAll('.pick').forEach(el => {
+            el.addEventListener('click', function () {
+                if (cardOf(q).classList.contains('done')) return;
+                if (multi) {
+                    el.classList.toggle('sel');
+                } else {
+                    const k = el.dataset.k;
+                    if (el.classList.contains('dim')) {
+                        // 已在排序区：点击撤回
+                        q4seq = q4seq.filter(x => x !== k);
+                    } else {
+                        if (q4seq.indexOf(k) >= 0) return;
+                        q4seq.push(k);
+                    }
+                    renderOrder();
+                }
+                setState(q, '已作答，待提交', '');
+            });
+        });
+    }
+
+    function renderOrder() {
+        const box = $('q4order');
+        box.querySelectorAll('.ochip, .arrow').forEach(n => n.remove());
+        const empty = box.querySelector('.order-empty');
+        if (q4seq.length === 0) {
+            empty.style.display = '';
+        } else {
+            empty.style.display = 'none';
+            q4seq.forEach((k, i) => {
+                if (i > 0) {
+                    const a = document.createElement('span');
+                    a.className = 'arrow';
+                    a.textContent = '→';
+                    box.appendChild(a);
+                }
+                const b = document.createElement('button');
+                b.className = 'ochip' + (i === q4seq.length - 1 ? ' ochip-last' : '');
+                b.dataset.k = k;
+                b.innerHTML = k + ' <span class="x">✕</span>';
+                b.addEventListener('click', function () {
+                    if (cardOf(4).classList.contains('done')) return;
+                    q4seq = q4seq.filter(x => x !== k);
+                    renderOrder();
+                });
+                box.appendChild(b);
+            });
+        }
+        // 同步左侧编号状态
+        $('q4list').querySelectorAll('.pick').forEach(el => {
+            if (q4seq.indexOf(el.dataset.k) >= 0) el.classList.add('dim');
+            else el.classList.remove('dim');
+        });
+    }
+
+    function cardOf(q) { return $('card' + q); }
+    function setState(q, txt, cls) {
+        const el = $('state' + q);
+        el.textContent = txt;
+        el.className = 'q-state' + (cls ? ' ' + cls : '');
+    }
+
+    function lock(q, on) {
+        const card = cardOf(q);
+        card.classList.toggle('done', on);
+        card.querySelectorAll('.opt, .pick').forEach(el => el.classList.toggle('locked', on));
+        card.querySelectorAll('.pbtn').forEach(b => b.disabled = on);
+        const ta = card.querySelector('textarea');
+        if (ta) ta.disabled = on;
+        card.querySelector('[data-submit="' + q + '"]').style.display = on ? 'none' : '';
+        card.querySelector('[data-reset="' + q + '"]').style.display = on ? '' : 'none';
+    }
+
+    // ================================================================
+    //  5. 提交
+    // ================================================================
+    function submitQ(q) {
+        if (state[q].score !== null) return;
+        let score = 0, html = '';
+
+        if (q === 1 || q === 3 || q === 5) {
+            const picked = cardOf(q).querySelector('.opt.checked');
+            if (!picked) { flash($('state' + q), '请先选择一个选项'); return; }
+            const v = picked.dataset.v;
+            const right = ANS['q' + q];
+            score = v === right ? 2 : 0;
+            cardOf(q).querySelectorAll('.opt').forEach(el => {
+                if (el.dataset.v === right) el.classList.add('correct');
+                if (el.dataset.v === v && v !== right) el.classList.add('wrong-pick');
+            });
+            state[q].ans = v;
+            html = fbHtml(score, 2, score === 2 ? '答对了' : '答案应为 ' + right) + EXP[q];
+        }
+
+        if (q === 2) {
+            const sel = [...cardOf(2).querySelectorAll('.pick.sel')].map(e => e.dataset.k);
+            if (sel.length === 0) { flash($('state' + q), '请至少选择一个编号'); return; }
+            score = scoreQ2(sel);
+            cardOf(2).querySelectorAll('.pick').forEach(el => {
+                const k = el.dataset.k;
+                if (ANS.q2.indexOf(k) >= 0) el.classList.add('correct');
+                else if (sel.indexOf(k) >= 0) el.classList.add('wrong-pick');
+            });
+            state[q].ans = sel.join('');
+            const head = score === 2 ? '全对' : (score === 1 ? '选对两项，得 1 分' : '未达给分点');
+            html = fbHtml(score, 2, head) + EXP[2];
+        }
+
+        if (q === 4) {
+            if (q4seq.length === 0) { flash($('state' + q), '请先排出顺序'); return; }
+            score = scoreQ4(q4seq);
+            state[q].ans = q4seq.join('');
+            cardOf(4).querySelectorAll('.pick').forEach(el => {
+                if (ANS.q4.indexOf(el.dataset.k) >= 0) el.classList.add('correct');
+                else if (q4seq.indexOf(el.dataset.k) >= 0) el.classList.add('wrong-pick');
+            });
+            const head = score === 2 ? '顺序完全正确' : (score === 1 ? '顺序正确，但多用了 ⑦⑧，得 1 分' : '顺序有误');
+            html = fbHtml(score, 2, head) + EXP[4];
+        }
+
+        if (q === 6) {
+            const text = $('q6text').value.trim();
+            if (!q6pick.甲 || !q6pick.乙 || !q6pick.丙) { flash($('state' + q), '请先为三人各选一个载体'); return; }
+            if (text.length < 6) { flash($('state' + q), '请说明理由（至少写几个字）'); return; }
+            const r = scoreQ6(q6pick, text);
+            score = r.total;
+            state[q].ans = '甲' + q6pick.甲 + '·乙' + q6pick.乙 + '·丙' + q6pick.丙;
+            // 标记对错
+            document.querySelectorAll('.pbtn').forEach(b => {
+                const p = b.dataset.p, v = b.dataset.v;
+                if (b.classList.contains('on')) {
+                    b.classList.remove('on');
+                    b.classList.add(v === ANS.q6[p] ? 'ok' : 'no');
+                }
+                if (v === ANS.q6[p]) b.classList.add('ok');
+            });
+            const dimTxt =
+                '<div class="fb-dims">' +
+                '<span>' + (r.dims.light ? '✅' : '⬜') + ' 光强耐受（甲）</span>' +
+                '<span>' + (r.dims.expr ? '✅' : '⬜') + ' 表达量与激活的细胞数（乙）</span>' +
+                '<span>' + (r.dims.safe ? '✅' : '⬜') + ' 非靶表达与安全（丙）</span>' +
+                '<span>选择 ' + r.choice + ' / 3 分</span>' +
+                '<span>理由 ' + num(r.reason) + ' / 2 分</span>' +
+                '</div>';
+            const wrongP = ['甲', '乙', '丙'].filter(p => !r.detail[p]).map(p => p + '（应选载体' + ANS.q6[p] + '）');
+            const head = score === 5 ? '满分' : (wrongP.length ? '选择有误：' + wrongP.join('、') : '选择正确，理由还可更完整');
+            html = fbHtml(score, 5, head) + '评分标准：三人选择各1分（须结合患者条件给出理由）；理由分别落在“光强耐受”“表达量与激活的细胞数”“非靶表达与安全”三处，完整得2分，缺一处扣0.5分。' + dimTxt;
+        }
+
+        state[q].score = score;
+        state[q].full = FULL[q];
+        html += '</div>';   // 关闭 fbHtml 打开的“解析”容器
+
+        const fb = $('fb' + q);
+        fb.style.display = '';
+        fb.className = 'q-fb ' + (score === FULL[q] ? 'ok' : (score > 0 ? '' : 'no'));
+        fb.innerHTML = html;
+
+        cardOf(q).classList.toggle('wrong', score < FULL[q]);
+        lock(q, true);
+        setState(q, '已提交 · ' + num(score) + ' / ' + FULL[q] + ' 分', score === FULL[q] ? 'ok' : 'no');
+        updateTop();
+    }
+
+    function fbHtml(score, full, head) {
+        return '<div class="fb-head">' + (score === full ? '✅ ' : (score > 0 ? '🟡 ' : '❌ ')) +
+            head + '　（' + num(score) + ' / ' + full + ' 分）</div>' +
+            '<div class="fb-exp">解析：';
+    }
+
+    function flash(el, txt) {
+        const old = el.textContent;
+        el.textContent = txt;
+        el.className = 'q-state no';
+        setTimeout(() => { if (state && el.textContent === txt) { el.textContent = old; el.className = 'q-state'; } }, 2200);
+    }
+
+    function resetQ(q) {
+        state[q] = { score: null, ans: null };
+        cardOf(q).classList.remove('done', 'wrong');
+        cardOf(q).querySelectorAll('.opt').forEach(el => {
+            el.classList.remove('checked', 'correct', 'wrong-pick', 'locked');
+            const i = el.querySelector('input'); if (i) i.checked = false;
+        });
+        cardOf(q).querySelectorAll('.pick').forEach(el => el.classList.remove('sel', 'correct', 'wrong-pick', 'locked', 'dim'));
+        cardOf(q).querySelectorAll('.pbtn').forEach(b => { b.disabled = false; b.classList.remove('on', 'ok', 'no'); });
+        const ta = cardOf(q).querySelector('textarea');
+        if (ta) ta.disabled = false;
+        $('fb' + q).style.display = 'none';
+        $('fb' + q).innerHTML = '';
+        cardOf(q).querySelector('[data-submit="' + q + '"]').style.display = '';
+        cardOf(q).querySelector('[data-reset="' + q + '"]').style.display = 'none';
+        if (q === 4) { q4seq = []; renderOrder(); }
+        if (q === 6) { q6pick = { 甲: null, 乙: null, 丙: null }; }
+        setState(q, '未作答', '');
+        updateTop();
+    }
+
+    // ================================================================
+    //  6. 顶部进度 / 交卷 / 成绩单
+    // ================================================================
+    function answeredCount() {
+        return Object.keys(state).filter(k => state[k].score !== null).length;
+    }
+    function currentScore() {
+        return Object.keys(state).reduce((s, k) => s + (state[k].score || 0), 0);
+    }
+
+    function updateTop() {
+        $('progressText').textContent = '已答 ' + answeredCount() + ' / 6 题';
+        $('scoreText').textContent = '目前 ' + num(currentScore()) + ' 分';
+        $('sbHint').textContent = answeredCount() < 6
+            ? '还有 ' + (6 - answeredCount()) + ' 题未提交；全部提交后交卷，可看到总分与参考答案。'
+            : '六题已全部提交，可以交卷了。';
+        document.querySelectorAll('.navdot').forEach(b => {
+            const s = state[b.dataset.go].score;
+            let cls = '';
+            if (s !== null) cls = s === FULL[b.dataset.go] ? ' done' : (s > 0 ? ' half' : ' wrong');
+            b.className = 'navdot' + cls;
+        });
+    }
+
+    function finish() {
+        const n = answeredCount();
+        if (n < 6 && !confirm('还有 ' + (6 - n) + ' 题未提交，未提交的题按 0 分计。确定交卷吗？')) return;
+
+        const total = currentScore();
+        const badge = $('totalBadge');
+        badge.textContent = num(total) + ' / ' + TOTAL;
+        badge.className = 'total-badge ' + (total >= 12 ? 'high' : (total >= 9 ? 'mid' : 'low'));
+        $('totalLabel').textContent = total >= 13 ? '优秀：核心机制与应用决策都掌握得很好'
+            : total >= 10 ? '良好：主干知识过关，个别环节还需回看'
+                : total >= 6 ? '基础：已抓住部分要点，建议对照解析逐题复盘'
+                    : '待提升：先回到材料与题干，把每个设问的依据找出来';
+        $('resultTime').textContent = '📅 ' + new Date().toLocaleString('zh-CN', { hour12: false });
+
+        // 逐题得分
+        const rows = [];
+        ['1', '2', '3', '4', '5', '6'].forEach(q => {
+            const s = state[q].score;
+            const v = s === null ? '未提交' : num(s) + ' / ' + FULL[q] + ' 分';
+            const cls = s === null ? 'no' : (s === FULL[q] ? 'ok' : (s > 0 ? 'part' : 'no'));
+            let a = '—';
+            if (state[q].ans) {
+                if (q === '6') a = state[q].ans;
+                else a = Array.isArray(state[q].ans) ? state[q].ans.join('') : state[q].ans;
+            }
+            rows.push('<div class="score-row"><span class="sr-no">第' + q + '题</span>' +
+                '<span class="sr-ans">你的作答：' + a + '</span>' +
+                '<span class="sr-val ' + cls + '">' + v + '</span></div>');
+        });
+        $('scoreTable').innerHTML = rows.join('');
+
+        // 评价与建议
+        const weak = [];
+        if (state[1].score === 0) weak.push('第1题：回到图1A，比较两种通道允许通过的离子');
+        if (state[2].score < 2) weak.push('第2题：把图1B的“脉冲落空”与“失活—恢复”联系起来，按顺序找出机制链');
+        if (state[3].score === 0) weak.push('第3题：数一数图2A中的突触，每个突触后膜完成一次转换');
+        if (state[4].score < 2) weak.push('第4题：先看这条通路是否经过感光细胞与双极细胞');
+        if (state[5].score === 0) weak.push('第5题：启动子决定“在哪类细胞中转录”，不是拷贝数或蛋白转移');
+        if (state[6].score < 5) weak.push('第6题：把每位患者的条件与载体的“表达量／光强需求”“特异性／安全性”对应起来');
+
+        $('fbBox').style.display = '';
+        $('fbText').textContent = answeredCount() === 6
+            ? '客观题部分（第1～5题）共10分，你得到 ' + num((state[1].score || 0) + (state[2].score || 0) + (state[3].score || 0) + (state[4].score || 0) + (state[5].score || 0)) + ' 分；第6题得到 ' + num(state[6].score || 0) + ' 分。'
+            : '本次有题目未提交，已按 0 分计。';
+
+        $('advBox').style.display = '';
+        $('advText').innerHTML = weak.length
+            ? '建议回看的环节：<br>' + weak.map(w => '• ' + w).join('<br>')
+            : '六题全部正确，可以再把第6题的理由写成一段完整的话：先写患者条件，再写载体参数，最后写选择与代价。';
+
+        const area = $('resultArea');
+        area.classList.add('show');
+        area.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        addRecord(total);
+    }
+
+    // ================================================================
+    //  7. 历史记录
+    // ================================================================
+    const KEY = 'gg_optogenetics_v1';
+
+    function getHistory() {
+        try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch (e) { return []; }
+    }
+    function saveHistory(list) { localStorage.setItem(KEY, JSON.stringify(list)); }
+
+    function addRecord(total) {
+        const list = getHistory();
+        const detail = ['1', '2', '3', '4', '5', '6'].map(q => {
+            const s = state[q].score;
+            return '第' + q + '题 ' + (s === null ? '未答' : num(s) + '/' + FULL[q]);
+        }).join('　');
+        list.push({
+            time: new Date().toLocaleString('zh-CN', { hour12: false }),
+            total: total,
+            detail: detail,
+            id: Date.now()
+        });
+        saveHistory(list);
+        renderHistory();
+    }
+
+    function renderHistory() {
+        const list = getHistory();
+        $('historyCount').textContent = list.length + ' 条';
+        const box = $('historyList');
+        if (list.length === 0) {
+            box.innerHTML = '<div class="history-empty">🌱 暂无提交记录，开始作答吧！</div>';
+            return;
+        }
+        box.innerHTML = [...list].reverse().map(r =>
+            '<div class="history-item">' +
+            '<div class="h-score">' + r.total + ' / ' + TOTAL + '</div>' +
+            '<div class="h-body"><div class="h-text">' + r.detail + '</div>' +
+            '<div class="h-meta" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:4px">' +
+            '<span style="font-size:12px;color:#8aa0b8">' + r.time + '</span>' +
+            '<button class="toggle-text" data-id="' + r.id + '">展开作答</button>' +
+            '</div></div></div>'
+        ).join('');
+
+        box.querySelectorAll('.toggle-text').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const rec = getHistory().find(r => String(r.id) === String(this.dataset.id));
+                if (!rec) return;
+                alert('作答明细：\n' + rec.detail + '\n\n提交时间：' + rec.time);
+            });
+        });
+    }
+
+    // ================================================================
+    //  8. 初始化
+    // ================================================================
+    document.addEventListener('DOMContentLoaded', function () {
+        [1, 3, 5].forEach(bindChoice);
+        bindPicks(2, true);
+        bindPicks(4, false);
+        renderOrder();
+
+        // 第6题三人选择
+        document.querySelectorAll('.pbtn').forEach(b => {
+            b.addEventListener('click', function () {
+                if (cardOf(6).classList.contains('done')) return;
+                const p = b.dataset.p;
+                document.querySelectorAll('.pbtn[data-p="' + p + '"]').forEach(x => x.classList.remove('on'));
+                b.classList.add('on');
+                q6pick[p] = b.dataset.v;
+                setState(6, '已作答，待提交', '');
+            });
+        });
+
+        $('q6text').addEventListener('input', function () {
+            $('q6count').textContent = this.value.length + ' 字';
+        });
+
+        document.querySelectorAll('[data-submit]').forEach(b => {
+            b.addEventListener('click', () => submitQ(Number(b.dataset.submit)));
+        });
+        document.querySelectorAll('[data-reset]').forEach(b => {
+            b.addEventListener('click', () => resetQ(Number(b.dataset.reset)));
+        });
+
+        $('finishBtn').addEventListener('click', finish);
+
+        $('restartBtn').addEventListener('click', function () {
+            if (!confirm('重新开始会清空本页的作答（提交记录不受影响），确定吗？')) return;
+            [1, 2, 3, 4, 5, 6].forEach(resetQ);
+            $('resultArea').classList.remove('show');
+            $('totalBadge').textContent = '0 / ' + TOTAL;
+            $('resultTime').textContent = '';
+            $('q6text').value = '';
+            $('q6count').textContent = '0 字';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        $('clearHistoryBtn').addEventListener('click', function () {
+            if (getHistory().length === 0) { alert('📭 暂无记录。'); return; }
+            if (confirm('清空全部提交记录？此操作不可撤销。')) { localStorage.removeItem(KEY); renderHistory(); }
+        });
+
+        // 点图放大
+        document.querySelectorAll('figure img').forEach(img => {
+            img.addEventListener('click', function () {
+                $('lightboxImg').src = this.src;
+                $('lightbox').classList.add('show');
+            });
+        });
+        $('lightbox').addEventListener('click', function () {
+            this.classList.remove('show');
+            $('lightboxImg').removeAttribute('src');
+        });
+
+        // 题号跳转
+        document.querySelectorAll('.navdot').forEach(b => {
+            b.addEventListener('click', function () {
+                const card = cardOf(this.dataset.go);
+                const y = card.getBoundingClientRect().top + window.scrollY - 76;
+                window.scrollTo({ top: y, behavior: 'smooth' });
+            });
+        });
+
+        updateTop();
+        renderHistory();
+    });
+})();
+</script>
+
+</body>
+</html>
